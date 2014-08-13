@@ -1,8 +1,22 @@
 # Reproducible Research: Peer Assessment 1
 
+NOTE: Set working directory to directory containing this file.
 
 ## Loading and preprocessing the data
 
+The data is loaded, directly from the zipped file:
+
+```{r}
+step.data <- read.csv(unz("activity.zip", "activity.csv"))
+```
+
+A quick check of the data is performed as follows:
+
+```{r}
+head(step.data)
+dim(step.data)
+```
+This is consistent with expectations.
 
 
 ## What is mean total number of steps taken per day?
