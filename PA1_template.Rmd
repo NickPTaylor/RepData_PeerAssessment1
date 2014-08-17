@@ -4,12 +4,14 @@ NOTE: Set working directory to directory containing this file.
 Load required libraries
 ```{r}
 library(ggplot2)
+library(data.table)
 ```
 
 ## Loading and preprocessing the data
-The data is loaded, directly from the zipped file:
+The data is loaded to a 'data table', directly from the zipped file:
 ```{r}
-step.data <- read.csv(unz("activity.zip", "activity.csv"))
+step.data <- data.table(read.csv(unz("activity.zip", "activity.csv")))
+setkey(step.data, date, interval)
 ```
 A quick check of the data is performed as follows:
 ```{r}
@@ -19,30 +21,43 @@ dim(step.data)
 This is consistent with expectations.
 
 ## What is mean total number of steps taken per day?
-First, an aggregate sum of the steps, split by day, is calculated.  From this, the ggplot library is used to plot a histogram.  Then, the mean and median total number of steps are calculated.
+Data tables can easilly be aggregated by key values.  Above, I set 'date' to be a key and then calculated the sum aggregated by this key.  From this, the ggplot library is used to plot a histogram.  Then, the mean and median total number of steps are calculated and reported.
 
 ```{r}
 # aggregate total steps per day
-steps.per.day <- aggregate(steps ~ date, data = step.data, sum)
+sum.steps.per.day <- step.data[, list(sumSteps = sum(steps)), by = date]
 
 # plot histogram of total steps per day
-g <- ggplot(steps.per.day, aes(x = steps))
-g <- g + geom_histogram(binwidth = 5000)
-g <- g + xlab("Number of Steps in a Day")
-g <- g + ylab("Frequency")
-g <- g + ggtitle("Histogram of Total Number of Steps in a Day")
-g <- g + xlim(0, 25000)
-print(g)
+g1 <- ggplot(sum.steps.per.day, aes(x = sumSteps))
+g1 <- g1 + geom_histogram(binwidth = 5000)
+g1 <- g1 + xlab("Number of Steps in a Day")
+g1 <- g1 + ylab("Frequency")
+g1 <- g1 + ggtitle("Histogram of Total Number of Steps in a Day")
+g1 <- g1 + xlim(0, 25000)
+print(g1)
 
 cat(sprintf("Mean Number of Total Steps per Day: %.1f", 
-                                                mean(steps.per.day$steps)))
+                        sum.steps.per.day[, mean(sumSteps, na.rm = T)]))
 cat(sprintf("Median Number of Total Steps per Day: %.1f", 
-                                                median(steps.per.day$steps)))
+                        sum.steps.per.day[, median(sumSteps, na.rm = T)]))
 ```
 
-
-
 ## What is the average daily activity pattern?
+
+```{r}
+ave.steps.per.int <- 
+        step.data[, list(aveSteps = mean(steps, na.rm = T)), by = interval]
+g2 <- ggplot(ave.steps.per.int, aes(y = aveSteps, x = interval))
+g2 <- g2 + geom_line()
+g2 <- g2 + xlab("Interval Identifier")
+g2 <- g2 + ylab("Mean Number of Steps")
+g2 <- g2 + ggtitle("Mean Number of Steps versus Interval Identifier")
+print(g2)
+
+cat(sprintf(
+        "The inteval with the maximum number of steps, on average, is: %i", 
+        ave.steps.per.int[, interval[which.max(aveSteps)]]))
+```
 
 
 
