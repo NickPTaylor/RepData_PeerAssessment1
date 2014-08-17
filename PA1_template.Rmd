@@ -23,8 +23,7 @@ dim(step.data)
 This is consistent with expectations.
 
 ## What is mean total number of steps taken per day?
-Data tables can easilly be aggregated by key values.  Above, I set 'date' to be a key and then calculated the sum aggregated by this key.  From this, the ggplot library is used to plot a histogram.  Then, the mean and median total number of steps are calculated and reported.
-
+Data tables can easily be aggregated by key values.  Above, I set 'date' to be a key and then calculated the sum aggregated by this key.  From this, the ggplot library is used to plot a histogram.  Then, the mean and median total number of steps are calculated and reported.
 ```{r}
 # aggregate total steps per day
 sum.steps.per.day <- step.data[, list(sumSteps = sum(steps)), by = date]
@@ -46,7 +45,7 @@ cat(sprintf("Median Number of Total Steps per Day: %.1f",
 ```
 
 ## What is the average daily activity pattern?
-Using a similar approach to above, the data table is aggregate mean is computed by interval.  
+Using a similar approach to above, the data table aggregate mean is computed by interval.  
 ```{r}
 # aggregate mean steps by interval
 ave.steps.per.int <- 
@@ -74,7 +73,7 @@ cat(sprintf(
         step.data[, sum(is.na(steps))]))
 ```
 
-Here, we will 'correct' the missing data by substituting in the mean steps for that inteveal accross all of the days of collected data:
+Here, I will 'correct' the missing data by substituting in the mean steps for that interval across all of the days of collected data:
 ```{r}
 # correction to data
 step.data[, stepsCor := 
@@ -114,3 +113,24 @@ summary(sum.steps.per.day)
 As can be observed in the summary table, correcting the missing data has not had no effect on the mean and only a small effect on the median.  
 
 ## Are there differences in activity patterns between weekdays and weekends?
+The following code identifies whether days are weekday or weekends.  Subsequently, a  plot is generated for the mean number of steps versus the interval, faceted by whether the day is during the week or at the weekend. 
+```{r}
+# create factor to identify whether day is week or weekend
+step.data[, week.day := 
+                        ifelse(weekdays(as.Date(date),T) %in% 
+                        c("Sat", "Sun"), "week.end", "week.day")]
+
+# aggregate data 
+ave.steps.per.int <- 
+                        step.data[, list(aveSteps = mean(stepsCor, na.rm = T)), 
+                        by = c("interval", "week.day")]
+
+# plot data
+g5 <- ggplot(data = step.data, aes(x = interval, y = stepsCor))
+g5 <- g5 + geom_line() 
+g5 <- g5 + facet_grid(week.day ~.)
+g5 <- g5 + xlab("Interval Identifier")
+g5 <- g5 + ylab("Mean Number of Steps")
+g5 <- g5 + ggtitle("Mean Number of Steps versus Interval Identifier")
+print(g5)
+```
