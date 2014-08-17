@@ -1,25 +1,44 @@
 # Reproducible Research: Peer Assessment 1
-
 NOTE: Set working directory to directory containing this file.
 
+Load required libraries
+```{r}
+library(ggplot2)
+```
+
 ## Loading and preprocessing the data
-
 The data is loaded, directly from the zipped file:
-
 ```{r}
 step.data <- read.csv(unz("activity.zip", "activity.csv"))
 ```
-
 A quick check of the data is performed as follows:
-
 ```{r}
 head(step.data)
 dim(step.data)
 ```
 This is consistent with expectations.
 
-
 ## What is mean total number of steps taken per day?
+First, an aggregate sum of the steps, split by day, is calculated.  From this, the ggplot library is used to plot a histogram.  Then, the mean and median total number of steps are calculated.
+
+```{r}
+# aggregate total steps per day
+steps.per.day <- aggregate(steps ~ date, data = step.data, sum)
+
+# plot histogram of total steps per day
+g <- ggplot(steps.per.day, aes(x = steps))
+g <- g + geom_histogram(binwidth = 5000)
+g <- g + xlab("Number of Steps in a Day")
+g <- g + ylab("Frequency")
+g <- g + ggtitle("Histogram of Total Number of Steps in a Day")
+g <- g + xlim(0, 25000)
+print(g)
+
+cat(sprintf("Mean Number of Total Steps per Day: %.1f", 
+                                                mean(steps.per.day$steps)))
+cat(sprintf("Median Number of Total Steps per Day: %.1f", 
+                                                median(steps.per.day$steps)))
+```
 
 
 
