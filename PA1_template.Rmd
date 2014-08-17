@@ -5,6 +5,8 @@ Load required libraries
 ```{r}
 library(ggplot2)
 library(data.table)
+library(grid)
+library(gridExtra)
 ```
 
 ## Loading and preprocessing the data
@@ -36,6 +38,7 @@ g1 <- g1 + ggtitle("Histogram of Total Number of Steps in a Day")
 g1 <- g1 + xlim(0, 25000)
 print(g1)
 
+# write out results
 cat(sprintf("Mean Number of Total Steps per Day: %.1f", 
                         sum.steps.per.day[, mean(sumSteps, na.rm = T)]))
 cat(sprintf("Median Number of Total Steps per Day: %.1f", 
@@ -43,10 +46,13 @@ cat(sprintf("Median Number of Total Steps per Day: %.1f",
 ```
 
 ## What is the average daily activity pattern?
-
+Using a similar approach to above, the data table is aggregate mean is computed by interval.  
 ```{r}
+# aggregate mean steps by interval
 ave.steps.per.int <- 
         step.data[, list(aveSteps = mean(steps, na.rm = T)), by = interval]
+
+# plot time series
 g2 <- ggplot(ave.steps.per.int, aes(y = aveSteps, x = interval))
 g2 <- g2 + geom_line()
 g2 <- g2 + xlab("Interval Identifier")
@@ -54,15 +60,57 @@ g2 <- g2 + ylab("Mean Number of Steps")
 g2 <- g2 + ggtitle("Mean Number of Steps versus Interval Identifier")
 print(g2)
 
+# write out results
 cat(sprintf(
         "The inteval with the maximum number of steps, on average, is: %i", 
         ave.steps.per.int[, interval[which.max(aveSteps)]]))
 ```
 
+## Inputing missing values
+The number of missing data is computed as follows:
+```{r}
+cat(sprintf(
+        "The total number of missing data is: %i", 
+        step.data[, sum(is.na(steps))]))
+```
 
+Here, we will 'correct' the missing data by substituting in the mean steps for that inteveal accross all of the days of collected data:
+```{r}
+# correction to data
+step.data[, stepsCor := 
+                ifelse(
+                        is.na(steps), 
+                        ave.steps.per.int[interval == interval, aveSteps], 
+                        steps
+                )
+]
 
-## Imputing missing values
+# aggregate data
+sum.steps.per.day <- step.data[, 
+                list(sumSteps = sum(steps), sumStepsCor = sum(stepsCor)), 
+                by = date]
 
+# plot data
+g3 <- ggplot(sum.steps.per.day, aes(x = sumSteps))
+g3 <- g3 + geom_histogram(binwidth = 5000)
+g3 <- g3 + xlab("Number of Steps in a Day")
+g3 <- g3 + ylab("Frequency")
+g3 <- g3 + ggtitle("Missing Data Not Corrected")
+g3 <- g3 + xlim(0, 25000) + ylim(0, 40)  
 
+g4 <- ggplot(sum.steps.per.day, aes(x = sumStepsCor))
+g4 <- g4 + geom_histogram(binwidth = 5000)
+g4 <- g4 + xlab("Number of Steps in a Day")
+g4 <- g4 + ylab("Frequency")
+g4 <- g4 + ggtitle("Missing Data Corrected")
+g4 <- g4 + xlim(0, 25000) + ylim(0, 40)
+
+grid.arrange(g3, g4, ncol = 1, 
+                main = "Histograms of Total Number of Steps in a Day")
+
+# write out results
+summary(sum.steps.per.day)
+```
+As can be observed in the summary table, correcting the missing data has not had no effect on the mean and only a small effect on the median.  
 
 ## Are there differences in activity patterns between weekdays and weekends?
