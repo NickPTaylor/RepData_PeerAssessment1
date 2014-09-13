@@ -1,11 +1,10 @@
 ---
 output:
-  pdf_document: default
   html_document:
     keep_md: yes
+  pdf_document: default
 ---
 # Reproducible Research: Peer Assessment 1
-NOTE: Set working directory to directory containing this file.
 
 Load required libraries
 ```{r}
@@ -16,7 +15,7 @@ library(gridExtra)
 ```
 
 ## Loading and preprocessing the data
-The data is loaded to a 'data table', directly from the zipped file:
+In order to run this document, set working directory to directory containing this file.  The data is loaded to a 'data table', directly from the zipped file:
 ```{r}
 step.data <- data.table(read.csv(unz("activity.zip", "activity.csv")))
 setkey(step.data, date, interval)
@@ -29,10 +28,10 @@ dim(step.data)
 This is consistent with expectations.
 
 ## What is mean total number of steps taken per day?
-Data tables can easily be aggregated by key values.  Above, I set 'date' to be a key and then calculated the sum aggregated by this key.  From this, the ggplot library is used to plot a histogram.  Then, the mean and median total number of steps are calculated and reported.
+Data tables can easily be aggregated by key values.  Above, I set 'date' to be a key and then calculated the sum aggregated by this key.  From this, the ggplot library is used to plot a histogram.  Then, the mean and median total number of steps are calculated and reported.  Note that missing values are to be ignored so I set `na.rm=T` in the code below.
 ```{r}
 # aggregate total steps per day
-sum.steps.per.day <- step.data[, list(sumSteps = sum(steps)), by = date]
+sum.steps.per.day <- step.data[, list(sumSteps = sum(steps, na.rm = T)), by = date]
 
 # plot histogram of total steps per day
 g1 <- ggplot(sum.steps.per.day, aes(x = sumSteps))
@@ -42,7 +41,6 @@ g1 <- g1 + ylab("Frequency")
 g1 <- g1 + ggtitle("Histogram of Total Number of Steps in a Day")
 g1 <- g1 + xlim(0, 25000)
 print(g1)
-ggsave("Figure1.png", g1, path = "figures", width = 10, height = 10)
 
 # write out results
 cat(sprintf("Mean Number of Total Steps per Day: %.1f", 
@@ -65,7 +63,6 @@ g2 <- g2 + xlab("Interval Identifier")
 g2 <- g2 + ylab("Mean Number of Steps")
 g2 <- g2 + ggtitle("Mean Number of Steps versus Interval Identifier")
 print(g2)
-ggsave("Figure2.png", g2, path = "figures", width = 10, height = 10)
 
 # write out results
 cat(sprintf(
@@ -94,8 +91,9 @@ step.data[, stepsCor :=
 
 # aggregate data
 sum.steps.per.day <- step.data[, 
-                list(sumSteps = sum(steps), sumStepsCor = sum(stepsCor)), 
+                list(sumSteps = sum(steps, na.rm = T), sumStepsCor = sum(stepsCor)), 
                 by = date]
+print(sum.steps.per.day)
 
 # plot data
 g3 <- ggplot(sum.steps.per.day, aes(x = sumSteps))
@@ -115,33 +113,31 @@ g4 <- g4 + xlim(0, 25000) + ylim(0, 40)
 g4 <- arrangeGrob(g3, g4, ncol = 1, 
                 main = "Histograms of Total Number of Steps in a Day")
 print(g4)
-ggsave("Figure3.png", g4, path = "figures", width = 10, height = 10)
 
 # write out results
 summary(sum.steps.per.day)
 ```
-As can be observed in the summary table, correcting the missing data has not had no effect on the mean and only a small effect on the median.  
+As can be observed in the summary table, correcting the missing data has increased the mean and median.  The reason is that if the missing values are simply ignored, the sums of 'missing values' will be biased towards zero.  Hence, the data is biased which is manifested as a right skewed dikstribution.  By correcting the missing data, we correct for this bias.
 
 ## Are there differences in activity patterns between weekdays and weekends?
 The following code identifies whether days are weekday or weekends.  Subsequently, a  plot is generated for the mean number of steps versus the interval, faceted by whether the day is during the week or at the weekend. 
 ```{r}
 # create factor to identify whether day is week or weekend
-step.data[, week.day := 
+step.data[, day.type := 
                         ifelse(weekdays(as.Date(date),T) %in% 
-                        c("Sat", "Sun"), "week.end", "week.day")]
+                        c("Sat", "Sun"), "week.end.day", "week.day")]
 
 # aggregate data 
 ave.steps.per.int <- 
-                        step.data[, list(aveSteps = mean(stepsCor, na.rm = T)), 
-                        by = c("interval", "week.day")]
+                        step.data[, list(aveSteps = mean(stepsCor)), 
+                        by = c("interval", "day.type")]
 
 # plot data
-g5 <- ggplot(data = step.data, aes(x = interval, y = stepsCor))
+g5 <- ggplot(data = ave.steps.per.int, aes(x = interval, y = aveSteps))
 g5 <- g5 + geom_line() 
-g5 <- g5 + facet_grid(week.day ~.)
+g5 <- g5 + facet_grid(day.type ~ .)
 g5 <- g5 + xlab("Interval Identifier")
 g5 <- g5 + ylab("Mean Number of Steps")
 g5 <- g5 + ggtitle("Mean Number of Steps versus Interval Identifier")
 print(g5)
-ggsave("Figure4.png", g5, path = "figures", width = 10, height = 10)
 ```
