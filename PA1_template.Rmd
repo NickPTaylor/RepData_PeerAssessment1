@@ -1,3 +1,9 @@
+---
+output:
+  pdf_document: default
+  html_document:
+    keep_md: yes
+---
 # Reproducible Research: Peer Assessment 1
 NOTE: Set working directory to directory containing this file.
 
@@ -36,6 +42,7 @@ g1 <- g1 + ylab("Frequency")
 g1 <- g1 + ggtitle("Histogram of Total Number of Steps in a Day")
 g1 <- g1 + xlim(0, 25000)
 print(g1)
+ggsave("Figure1.png", g1, path = "figures", width = 10, height = 10)
 
 # write out results
 cat(sprintf("Mean Number of Total Steps per Day: %.1f", 
@@ -58,6 +65,7 @@ g2 <- g2 + xlab("Interval Identifier")
 g2 <- g2 + ylab("Mean Number of Steps")
 g2 <- g2 + ggtitle("Mean Number of Steps versus Interval Identifier")
 print(g2)
+ggsave("Figure2.png", g2, path = "figures", width = 10, height = 10)
 
 # write out results
 cat(sprintf(
@@ -104,8 +112,10 @@ g4 <- g4 + ylab("Frequency")
 g4 <- g4 + ggtitle("Missing Data Corrected")
 g4 <- g4 + xlim(0, 25000) + ylim(0, 40)
 
-grid.arrange(g3, g4, ncol = 1, 
+g4 <- arrangeGrob(g3, g4, ncol = 1, 
                 main = "Histograms of Total Number of Steps in a Day")
+print(g4)
+ggsave("Figure3.png", g4, path = "figures", width = 10, height = 10)
 
 # write out results
 summary(sum.steps.per.day)
@@ -133,4 +143,5 @@ g5 <- g5 + xlab("Interval Identifier")
 g5 <- g5 + ylab("Mean Number of Steps")
 g5 <- g5 + ggtitle("Mean Number of Steps versus Interval Identifier")
 print(g5)
+ggsave("Figure4.png", g5, path = "figures", width = 10, height = 10)
 ```

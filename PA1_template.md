@@ -1,3 +1,9 @@
+---
+output:
+  pdf_document: default
+  html_document:
+    keep_md: yes
+---
 # Reproducible Research: Peer Assessment 1
 NOTE: Set working directory to directory containing this file.
 
@@ -6,6 +12,13 @@ Load required libraries
 ```r
 library(ggplot2)
 library(data.table)
+```
+
+```
+## data.table 1.9.2  For help type: help("data.table")
+```
+
+```r
 library(grid)
 library(gridExtra)
 ```
@@ -59,7 +72,7 @@ g1 <- g1 + xlim(0, 25000)
 print(g1)
 ```
 
-![plot of chunk unnamed-chunk-4](./PA1_template_files/figure-html/unnamed-chunk-4.png) 
+![plot of chunk unnamed-chunk-4](figure/unnamed-chunk-4.png) 
 
 ```r
 ggsave("Figure1.png", g1, path = "figures", width = 10, height = 10)
@@ -99,7 +112,7 @@ g2 <- g2 + ggtitle("Mean Number of Steps versus Interval Identifier")
 print(g2)
 ```
 
-![plot of chunk unnamed-chunk-5](./PA1_template_files/figure-html/unnamed-chunk-5.png) 
+![plot of chunk unnamed-chunk-5](figure/unnamed-chunk-5.png) 
 
 ```r
 ggsave("Figure2.png", g2, path = "figures", width = 10, height = 10)
@@ -181,7 +194,7 @@ g4 <- arrangeGrob(g3, g4, ncol = 1,
 print(g4)
 ```
 
-![plot of chunk unnamed-chunk-7](./PA1_template_files/figure-html/unnamed-chunk-7.png) 
+![plot of chunk unnamed-chunk-7](figure/unnamed-chunk-7.png) 
 
 ```r
 ggsave("Figure3.png", g4, path = "figures", width = 10, height = 10)
@@ -243,7 +256,7 @@ g5 <- g5 + ggtitle("Mean Number of Steps versus Interval Identifier")
 print(g5)
 ```
 
-![plot of chunk unnamed-chunk-8](./PA1_template_files/figure-html/unnamed-chunk-8.png) 
+![plot of chunk unnamed-chunk-8](figure/unnamed-chunk-8.png) 
 
 ```r
 ggsave("Figure4.png", g5, path = "figures", width = 10, height = 10)
